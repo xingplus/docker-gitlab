@@ -221,6 +221,7 @@ jobs:
           registry: docker.io,quay.io
           image: sameersbn/gitlab
           tag: ${CIRCLE_TAG:-latest}
+      - store-artifact-from-workspace
 
   test:
     executor: docker/machine
@@ -245,11 +246,6 @@ jobs:
           command: |
             docker run --network container:$(docker-compose ps -q gitlab) \
               curlimages/curl --ipv4 --retry 60 --retry-delay 5 --retry-connrefused -svf http://localhost/explore -o /dev/null
-
-  store-artifact-from-ws:
-    executor: docker/machine
-    steps:
-      - store-artifact-from-workspace
 
   publish-dockerhub:
     executor: docker/machine
@@ -304,18 +300,10 @@ workflows:
           filters:
             tags:
               only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-      - store-artifact-from-ws:
-          requires:
-            - shellcheck
-          filters:
-            tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
       - build:
           requires:
             - shellcheck
           filters:
-            branches:
-              only: master
             tags:
               only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
       - test:
