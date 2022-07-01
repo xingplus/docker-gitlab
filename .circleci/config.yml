@@ -160,6 +160,15 @@ commands:
           command: >
             docker load -i ~/docker/docker-images.tar
 
+  store-artifact-from-workspace:
+    description: |
+      Store artifact from workspace
+    steps:
+      - attach_workspace:
+          at: ~/
+      - store_artifacts:
+          path: ~/docker/docker-images.tar
+
   docker-publish:
     description: |
       Build and optionally deploy a Docker images
@@ -236,6 +245,11 @@ jobs:
           command: |
             docker run --network container:$(docker-compose ps -q gitlab) \
               curlimages/curl --ipv4 --retry 60 --retry-delay 5 --retry-connrefused -svf http://localhost/explore -o /dev/null
+
+  store-artifact-from-ws:
+    executor: docker/machine
+    steps:
+      - store-artifact-from-workspace
 
   publish-dockerhub:
     executor: docker/machine
